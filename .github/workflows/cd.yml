@@ -8,6 +8,9 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
       - name: Check out code
@@ -20,3 +23,19 @@ jobs:
 
       - name: Build App
         run: scripts/buildprod.sh
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v3'
+        with:
+          version: 'latest'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: Build and push image
+        run: gcloud builds submit --tag us-central1-docker.pkg.dev/flash-span-473912-i4/notely-ar-repo/notely:latest .
